@@ -1,7 +1,8 @@
 import psycopg2
 from openai import OpenAI
 
-# The api key
+
+# the api key
 key_2 ='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'
 client = OpenAI(api_key=key_2)
 
