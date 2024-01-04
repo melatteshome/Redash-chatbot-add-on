@@ -22,6 +22,59 @@ def connect_to_database(connection_params: dict):
         print(f"Error: Unable to connect to the database. {e}")
         return None
 
+
+def create_database(connection_params: dict, database_name: str):
+    """
+    connection_params = {
+    'dbname': 'your_database_name',
+    'user': 'your_username',
+    'password': 'your_password',
+    'host': 'your_host',
+    'port': 'your_port'
+}
+    """
+    try:
+        # Connect to the default 'postgres' database
+        connection = psycopg2.connect(**connection_params)
+        cursor = connection.cursor()
+
+        # Create a new database
+        cursor.execute(f"CREATE DATABASE {database_name}")
+
+        # Commit the changes and close the connection
+        connection.commit()
+        connection.close()
+
+        print(f"Database '{database_name}' created successfully.")
+    except psycopg2.Error as e:
+        print(f"Error: Unable to create the database. {e}")
+
+def create_table(connection_params: dict, database_name: str, table_name: str, table_schema: str):
+    """
+    database_name = 'your_database'
+    table_name = 'new_table'
+    table_schema = '''
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255),
+    age INT,
+    email VARCHAR(255)
+    """
+    try:
+        # Connect to the specified database
+        connection_params['dbname'] = database_name
+        connection = psycopg2.connect(**connection_params)
+        cursor = connection.cursor()
+
+        # Create the table using the provided schema
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS {table_name} ({table_schema})")
+
+        # Commit the changes and close the connection
+        connection.commit()
+        connection.close()
+
+        print(f"Table '{table_name}' created successfully.")
+    except psycopg2.Error as e:
+        print(f"Error: Unable to create the table. {e}")
 def read_table_to_dataframe(table_name, connection_params):
     """
     Reads a PostgreSQL table into a pandas dataframe.
