@@ -1,7 +1,8 @@
 import pandas as pd
 import psycopg2
 from sqlalchemy import create_engine
-
+import os
+import csv
 def connect_to_database(connection_params: dict):
     """
     Connects to the PostgreSQL database.
@@ -49,32 +50,81 @@ def create_database(connection_params: dict, database_name: str):
     except psycopg2.Error as e:
         print(f"Error: Unable to create the database. {e}")
 
-def create_table(connection_params: dict, database_name: str, table_name: str, table_schema: str):
-    """
-    database_name = 'your_database'
-    table_name = 'new_table'
-    table_schema = '''
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255),
-    age INT,
-    email VARCHAR(255)
-    """
+# def create_table(connection_params: dict, database_name: str, table_name: str, table_schema: str):
+#     """
+#     database_name = 'your_database'
+#     table_name = 'new_table'
+#     table_schema = '''
+#     id SERIAL PRIMARY KEY,
+#     name VARCHAR(255),
+#     age INT,
+#     email VARCHAR(255)
+#     """
+#     try:
+#         # Connect to the specified database
+#         connection_params['dbname'] = database_name
+#         connection = psycopg2.connect(**connection_params)
+#         cursor = connection.cursor()
+
+#         # Create the table using the provided schema
+#         cursor.execute(f"CREATE TABLE IF NOT EXISTS {table_name} ({table_schema})")
+
+#         # Commit the changes and close the connection
+#         connection.commit()
+#         connection.close()
+
+#         print(f"Table '{table_name}' created successfully.")
+#     except psycopg2.Error as e:
+#         print(f"Error: Unable to create the table. {e}")
+
+def traverse_directory(connection,directory):
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            file_path = os.path.join(root, file)
+            folder_name = os.path.basename(root)
+            table_name = folder_name + '_' + file.split('.')[0]
+            headers = get_csv_headers(file_path)
+            try:
+                create_table(connection, table_name, headers)
+                insert_data(connection, table_name, file_path)
+            except Exception as e:
+                print(f"An error occurred while processing {file_path}: {e}")
+
+
+def get_csv_headers(csv_file_path):
+    with open(csv_file_path, 'r') as file:
+        reader = csv.reader(file)
+        headers = next(reader)
+    return headers
+def create_table(connection, table_name, headers):
+    cursor = connection.cursor()
+    columns = ', '.join([f"{header} TEXT" for header in headers])
+    create_table_sql = f"CREATE TABLE {table_name} ({columns});"
     try:
-        # Connect to the specified database
-        connection_params['dbname'] = database_name
-        connection = psycopg2.connect(**connection_params)
-        cursor = connection.cursor()
+        cursor.execute(create_table_sql)
+    except Exception as e:
+        print(f"An error occurred while creating table {table_name}: {e}")
 
-        # Create the table using the provided schema
-        cursor.execute(f"CREATE TABLE IF NOT EXISTS {table_name} ({table_schema})")
 
-        # Commit the changes and close the connection
-        connection.commit()
-        connection.close()
+def insert_data(connection, table_name, csv_file_path):
+    cursor = connection.cursor()
+    with open(csv_file_path, 'r') as file:
+        reader = csv.reader(file)
+        next(reader)  # Skip the header row if needed
+        for row in reader:
+            insert_sql = f"INSERT INTO {table_name} VALUES ({', '.join(['%s'] * len(row))})"
+            try:
+                cursor.execute(insert_sql, tuple(row))
+            except Exception as e:
+                print(f"An error occurred while inserting data into {table_name}: {e}")
+    connection.commit()
 
-        print(f"Table '{table_name}' created successfully.")
-    except psycopg2.Error as e:
-        print(f"Error: Unable to create the table. {e}")
+# Connect to the database
+try:
+    connection = psycopg2.connect(database="your_database", user="your_user", password="your_password", host="your_host", port="your_port")
+except Exception as e:
+    print(f"Failed to connect to the database: {e}")
+    exit(1)
 def read_table_to_dataframe(table_name, connection_params):
     """
     Reads a PostgreSQL table into a pandas dataframe.
