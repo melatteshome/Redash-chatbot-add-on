@@ -1,13 +1,15 @@
 from flask import Flask
 from flask import request
-app = Flask(__name__)
+import langchain_intergation.langchain_connection as langchain_
 
+app = Flask(__name__)
+ 
 
 
 
 @app.route('/', methods=['GET', 'POST'])
 def data():
     if request.method == 'POST':
-        return 
+        return null
     else:
-        return 
+        return langchain.getResponse()
