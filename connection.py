@@ -1,8 +1,9 @@
 import psycopg2
 from openai import OpenAI
-
+import os
+api_key = os.environ.get('OPENAI_API_KEY')
 # The api key
-key_2 ='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'
+key_2 = api_key
 client = OpenAI(api_key=key_2)
 
 # Establish a connection to the PostgreSQL database
