@@ -29,12 +29,16 @@ print(db)
 #     toolkit=toolkit,
 #     verbose= True
 # )
+#loading the api_key
 llm = llm = ChatOpenAI(openai_api_key= api_key
 )
+#creating a db chain
 db_chain = SQLDatabaseChain.from_llm(llm, db, verbose=True)
 
+#using the chain to run a query
 db_chain.run("show all tables in the YoutubeDB")
 
+#creating a tempate for sql queries and responses
 from langchain.prompts import PromptTemplate
 
 TEMPLATE = """Given an input question, first create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer.
