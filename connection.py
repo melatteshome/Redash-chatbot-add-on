@@ -1,9 +1,9 @@
 import psycopg2
 from openai import OpenAI
-
-
-# the api key
-key_2 ='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'
+import os
+api_key = os.environ.get('OPENAI_API_KEY')
+# The api key
+key_2 = api_key
 client = OpenAI(api_key=key_2)
 
 # Establish a connection to the PostgreSQL database
@@ -39,8 +39,9 @@ response = client.chat.completions.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "system", "content": "You are a helpful assistant who knows how to write PostgreSQL SQL queries."},
-        {"role": "user", "content": "Generate a SQL query to retrieve all the tables in the YoutubeDB."},
-        
+        {"role": "user", "content": "Generate a SQL query to retrieve all the data in the cities_table_data."},
+        {"role":"assistant", "content": "SELECT * FROM cities_table_data"},
+        {"role": "user", "content": "write an sql querry to select all tables in the YoutubeDB"}
     ]
 )
 
