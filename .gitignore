@@ -1,1 +1,4 @@
+/youtube-data
+/backend/.venv/
+/backend/_pycache/
 .env
