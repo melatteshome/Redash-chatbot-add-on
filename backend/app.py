@@ -10,6 +10,6 @@ app = Flask(__name__)
 @app.route('/', methods=['GET', 'POST'])
 def data():
     if request.method == 'POST':
-        return null
+        return 0
     else:
         return langchain.getResponse()
